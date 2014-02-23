@@ -61,10 +61,10 @@ Client.prototype.ping = function ( force ) {
     }
 
     this.socket.write(
-        'GET /playback-info HTTP/1.1\n' +
-        'User-Agent: ' + CLIENT_USERAGENT + '\n' +
-        'Content-Length: 0\n' +
-        '\n'
+        'GET /playback-info HTTP/1.1\r\n' +
+        'User-Agent: ' + CLIENT_USERAGENT + '\r\n' +
+        'Content-Length: 0\r\n' +
+        '\r\n'
     );
     
     this.emit( 'ping' );
@@ -107,7 +107,9 @@ Client.prototype.parseResponse = function( res ) {
 
     // Peel off status
     var status = header.substr( 0, header.indexOf( '\n' ) );
+//    console.log(status);
     var statusMatch = status.match( /HTTP\/1.1 ([0-9]+) (.+)/ );
+
     header = header.substr( status.length + 1 );
 
     // Parse headers
@@ -120,10 +122,11 @@ Client.prototype.parseResponse = function( res ) {
         allHeaders[key] = value;
     }
 
+
     // Trim body?
     return {
-        statusCode: parseInt( statusMatch[1] ),
-        statusReason: statusMatch[2],
+        statusCode: statusMatch!=null ? parseInt( statusMatch[1]) : 200 ,
+        statusReason: statusMatch!=null ? statusMatch[2] : 'OK',
         headers: allHeaders,
         body: body
     };
@@ -149,12 +152,12 @@ Client.prototype.request = function( req, body, callback ) {
 
 
     // 1. base
-    var text = req.method + ' ' + req.path + ' HTTP/1.1\n';
+    var text = req.method + ' ' + req.path + ' HTTP/1.1\r\n';
     // 2. header
     for ( var key in req.headers ) {
-        text += key + ': ' + req.headers[key] + '\n';
+        text += key + ': ' + req.headers[key] + '\r\n';
     }
-    text += '\n'; // 这个换行不能少~~
+    text += '\r\n'; // 这个换行不能少~~
     // 3. body
     text += body || '';
 
@@ -177,19 +180,22 @@ Client.prototype.post = function( path, body, callback ) {
 Client.prototype.serverInfo = function ( callback ) {
     this.get( '/server-info', function ( res ) {
         var info = {};
-        
-        var obj = plist.parseStringSync( res.body );
-        if ( obj ) {
-            info = {
-                deviceId: obj.deviceid,
-                features: obj.features,
-                model: obj.model,
-                osVersion: obj.osBuildVersion,
-                protocolVersion: obj.protovers,
-                sourceVersion: obj.srcvers,
-                vv: obj.vv
-            };
+
+        if (res.body.length>0) {
+            var obj = plist.parseStringSync( res.body );
+            if ( obj ) {
+                info = {
+                    deviceId: obj.deviceid,
+                    features: obj.features,
+                    model: obj.model,
+                    osVersion: obj.osBuildVersion,
+                    protocolVersion: obj.protovers,
+                    sourceVersion: obj.srcvers,
+                    vv: obj.vv
+                };
+            }
         }
+
 
         callback && callback( info );
     });
