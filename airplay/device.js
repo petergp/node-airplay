@@ -86,19 +86,16 @@ Device.prototype.getInfo = function() {
         name: info.name,
         fullName: info.fullname,
         deviceId: txtRecord.deviceid || serverInfo.deviceId,
-        features: serverInfo.features || txtRecord.features,
-        model: serverInfo.model,
+        features: txtRecord.features || serverInfo.features,
+        model: info.model || serverInfo.model,
         interfaceName: info.networkInterface,
         interfaceIndex: info.interfaceIndex,
         addresses: info.addresses,
-        
         flags: txtRecord.flags,
         pk: txtRecord.pk,
-
-        osVersion: serverInfo.osVersion,
         protocolVersion: serverInfo.protocolVersion,
-        sourceVersion: serverInfo.sourceVersion || txtRecord.srcvers,
-        vv: serverInfo.vv || txtRecord.vv,
+        sourceVersion: txtRecord.srcvers || serverInfo.sourceVersion,
+        vv: txtRecord.vv || serverInfo.vv,
 
         slideshowFeatures: [],
         supportedContentTypes: []
